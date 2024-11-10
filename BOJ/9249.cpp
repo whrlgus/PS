@@ -5,7 +5,7 @@ using namespace std;
 #define f(i,l,r) for(int i = l; i < r; ++i)
 
 int L, T, SFX[MAXN], LCP[MAXN];
-char S[MAXN], B[MAXN];
+string S, B;
 struct info {
     int idx, rank;
 };
@@ -59,9 +59,9 @@ void makeLCP() {
 void sol() {
     cin>>S>>B;
     
-    int lenA = strlen(S), lenB = strlen(B);
+    int lenA = S.length(), lenB = B.length();
     L = lenA + lenB + 1;
-    strcat(S, "#"); strcat(S, B);
+    S.append("#"); S.append(B);
     
     makeSuffixArray();
     makeLCP();
@@ -81,8 +81,7 @@ void sol() {
             beginIdx = SFX[i+1];
         }
     }
-    cout<<maxLen<<'\n';
-    f(i,beginIdx,beginIdx+maxLen)cout<<S[i];
+    cout<<maxLen<<'\n'<<S.substr(beginIdx, maxLen);;
 }
 
 int main() {
