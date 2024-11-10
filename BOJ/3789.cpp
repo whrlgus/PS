@@ -2,6 +2,7 @@
 using namespace std;
 
 #define MAXN 200001
+#define f(i,l,r) for(int i = l; i < r; ++i)
 
 int n, L, T, SFX[MAXN], LCP[MAXN];
 char S[MAXN];
@@ -12,43 +13,46 @@ struct info {
 void makeSuffixArray() {
     info p[MAXN];
     int q[MAXN];
-    for(int i = 0; i < n; ++i){
+    f(i,0,L) {
         p[i].idx = i;
         p[i].rank = S[i]-'a';
-        q[i]=p[i].rank;
     }
-    q[n] = -1;
     
-    for(int t=1; t>>1 <= n; t<<=1) {
-        sort(p, p+n, [&](info i, info j){
-            return i.rank == j.rank ? q[i.idx+t] < q[j.idx+t] : i.rank < j.rank;
+    for(int t = 1; t < L; t <<= 1) {
+        memset(q, -1, sizeof(int)*L);
+        f(i,0,L){
+            int j = p[i].idx-t;
+            if(j >= 0) q[j] = p[i].rank;
+        }
+        
+        sort(p, p+L, [&](info i, info j){
+            return i.rank == j.rank ? q[i.idx] < q[j.idx] : i.rank < j.rank;
         });
         
         int rank = 0;
+        int prevRank = p[0].rank;
         p[0].rank = rank;
-        for(int i=1; i<n; ++i){
-            if (q[p[i].idx] != q[p[i-1].idx] || q[p[i].idx+t] != q[p[i-1].idx+t])++rank;
+        f(i,1,L){
+            if (prevRank != p[i].rank || q[p[i-1].idx] != q[p[i].idx]) ++rank;
+            prevRank = p[i].rank;
             p[i].rank = rank;
         }
-        
-        for(int i=0; i<n; ++i)q[p[i].idx]=p[i].rank;
     }
     
-    for(int i=0; i<n; ++i)SFX[i]=p[i].idx;
+    f(i,0,L) SFX[i] = p[i].idx;
 }
 
 void makeLCP() {
     int rev[MAXN];
-    for(int i=0;i<n;++i)rev[SFX[i]]=i;
+    f(i,0,L) rev[SFX[i]] = i;
     
-    int i=0;
-    while(i<n) {
-        int cnt=0;
-        if(rev[i])while(S[SFX[rev[i]]+cnt] == S[SFX[rev[i]-1]+cnt])++cnt;
-        LCP[rev[i]]=cnt;
-        
-        while(cnt>0)LCP[rev[++i]]=--cnt;
-        ++i;
+    LCP[0] = 0;
+    int d = 0;
+    f(i,0,L) if(rev[i]) {
+        int j = SFX[rev[i]-1];
+        while(j+d < L && S[SFX[rev[i]]+d] == S[j+d]) ++d;
+        LCP[rev[i]]=d;
+        if (d > 0) --d;
     }
 }
 
